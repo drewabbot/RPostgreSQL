@@ -245,7 +245,7 @@ RS_postgresql_allocConParams(void)
     RS_PostgreSQL_conParams *conParams;
 
     conParams = (RS_PostgreSQL_conParams *)
-        malloc(sizeof(RS_PostgreSQL_conParams));
+        Malloc(sizeof(RS_PostgreSQL_conParams));
     if (!conParams) {
         RS_DBI_errorMessage("could not malloc space for connection params", RS_DBI_ERROR);
     }
@@ -258,28 +258,28 @@ void
 RS_PostgreSQL_freeConParams(RS_PostgreSQL_conParams * conParams)
 {
     if (conParams->host) {
-        free(conParams->host);
+        Free(conParams->host);
     }
     if (conParams->dbname) {
-        free(conParams->dbname);
+        Free(conParams->dbname);
     }
     if (conParams->user) {
-        free(conParams->user);
+        Free(conParams->user);
     }
     if (conParams->password) {
-        free(conParams->password);
+        Free(conParams->password);
     }
     if (conParams->port) {
-        free(conParams->port);
+        Free(conParams->port);
     }
     if (conParams->tty) {
-        free(conParams->tty);
+        Free(conParams->tty);
     }
     if (conParams->options) {
-        free(conParams->options);
+        Free(conParams->options);
     }
 
-    free(conParams);
+    Free(conParams);
     return;
 }
 
@@ -419,7 +419,7 @@ RS_PostgreSQL_exec(Con_Handle * conHandle, s_object * statement)
         rsHandle = RS_DBI_asResHandle(MGR_ID(conHandle), CON_ID(conHandle), res_id);
         result = RS_DBI_getResultSet(rsHandle);
         if (result->completed == 0) {
-            free(dyn_statement);
+            Free(dyn_statement);
             RS_DBI_errorMessage("connection with pending rows, close resultSet before continuing", RS_DBI_ERROR);
         }
         else {
@@ -438,7 +438,7 @@ RS_PostgreSQL_exec(Con_Handle * conHandle, s_object * statement)
         size_t len;
         omsg = PQerrorMessage(my_connection);
         len = strlen(omsg);
-        free(dyn_statement);
+        Free(dyn_statement);
         errMsg = R_alloc(len + 80, 1); /* 80 should be larger than the length of "could not ..."*/
         snprintf(errMsg, len + 80,  "could not run statement: %s", omsg);
         RS_DBI_errorMessage(errMsg, RS_DBI_ERROR);
@@ -467,7 +467,7 @@ RS_PostgreSQL_exec(Con_Handle * conHandle, s_object * statement)
         /*  Frees the storage associated with a PGresult.
          *  void PQclear(PGresult *res);   */
         PQclear(my_result);
-        free(dyn_statement);
+        Free(dyn_statement);
         RS_DBI_errorMessage(errResultMsg, RS_DBI_ERROR);
     }
 
@@ -495,7 +495,7 @@ RS_PostgreSQL_exec(Con_Handle * conHandle, s_object * statement)
     if (is_select) {
         result->fields = RS_PostgreSQL_createDataMappings(rsHandle);
     }
-    free(dyn_statement);
+    Free(dyn_statement);
     UNPROTECT(1);
     return rsHandle;
 }
@@ -888,6 +888,8 @@ RS_PostgreSQL_closeResultSet(s_object * resHandle)
     result = RS_DBI_getResultSet(resHandle);
 
     my_result = (PGresult *) result->drvResultSet;
+
+    warning("closeResultSet: calling PQclear..");
 
     PQclear(my_result);
 

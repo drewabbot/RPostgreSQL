@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+
+
 #include "S4R.h"
 
 #ifdef WIN32
@@ -34,7 +36,14 @@ extern "C" {
 #include <unistd.h>
 #endif
 
+#include <R.h>
+#include <Rinternals.h>
+  
 #include<ctype.h>               /* NOTE:added this header because of using isalpha in RS-DBI.c -sameer */
+
+
+
+#define Malloc(x) ( Calloc((x), unsigned char) )
 
 //    pid_t getpid();
 

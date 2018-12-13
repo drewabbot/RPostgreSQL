@@ -79,10 +79,10 @@ void *R_AllocStringBuffer(size_t blen, R_StringBuffer *buf)
     if(blen < blen1) blen += bsize;
 
     if(buf->data == NULL) {
-        buf->data = (char *) malloc(blen);
+        buf->data = (char *) Malloc(blen);
         buf->data[0] = '\0';
     } else
-        buf->data = (char *) realloc(buf->data, blen);
+      buf->data = (char *) Realloc(buf->data, blen, unsigned char);
     buf->bufsize = blen;
     if(!buf->data) {
         buf->bufsize = 0;

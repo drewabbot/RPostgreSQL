@@ -24,8 +24,11 @@ postgresqlInitDriver <- function(max.con=16, fetch.default.rec = 500, force.relo
 }
 
 postgresqlCloseDriver <- function(drv, ...) {
-   if(!isPostgresqlIdCurrent(drv))
-      return(TRUE)
+  if(!isPostgresqlIdCurrent(drv)){
+    message('mgr id not current!')
+    return(TRUE)
+  }
+  message('calling closeManager..')
    drvId <- as(drv, "integer")
    .Call(RS_PostgreSQL_closeManager, drvId)
 }
@@ -483,10 +486,14 @@ postgresqlDescribeResult <- function(obj, verbose = FALSE, ...) {
 }
 
 postgresqlCloseResult <- function(res, ...) {
-    if(!isPostgresqlIdCurrent(res))
-        return(TRUE)
-    rsId <- as(res, "integer")
-    .Call(RS_PostgreSQL_closeResultSet, rsId)
+  
+  if(!isPostgresqlIdCurrent(res)){
+    message('result id not current!')
+    return(TRUE)
+  }
+  message('calling closeResultSet..')
+  rsId <- as(res, "integer")
+  .Call(RS_PostgreSQL_closeResultSet, rsId)
 }
 
 ## Use NULL, "", or 0 as row.names to prevent using any field as row.names.

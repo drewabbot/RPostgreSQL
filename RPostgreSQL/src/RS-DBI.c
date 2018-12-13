@@ -49,7 +49,7 @@ RS_DBI_allocManager(const char *drvName, Sint max_con, Sint fetch_default_rec, S
 
     if (!dbManager) {           /* alloc for the first time */
         counter = 0;            /* connections handled so far */
-        mgr = (RS_DBI_manager *) malloc(sizeof(RS_DBI_manager));
+        mgr = (RS_DBI_manager *) Malloc(sizeof(RS_DBI_manager));
     }
     else {                      /* we're re-entering */
         if (dbManager->connections) {   /* and mgr is valid */
@@ -71,17 +71,17 @@ RS_DBI_allocManager(const char *drvName, Sint max_con, Sint fetch_default_rec, S
     mgr->drvName = RS_DBI_copyString(drvName);
     mgr->drvData = (void *) NULL;
     mgr->managerId = mgr_id;
-    mgr->connections = (RS_DBI_connection **) calloc((size_t) max_con, sizeof(RS_DBI_connection));
+    mgr->connections = (RS_DBI_connection **) Calloc((size_t) max_con, RS_DBI_connection);
     if (!mgr->connections) {
-        free(mgr->drvName);
-        free(mgr);
+        Free(mgr->drvName);
+        Free(mgr);
         RS_DBI_errorMessage("could not calloc RS_DBI_connections", RS_DBI_ERROR);
     }
-    mgr->connectionIds = (Sint *) calloc((size_t) max_con, sizeof(Sint));
+    mgr->connectionIds = (Sint *) Calloc((size_t) max_con, Sint);
     if (!mgr->connectionIds) {
-        free(mgr->drvName);
-        free(mgr->connections);
-        free(mgr);
+        Free(mgr->drvName);
+        Free(mgr->connections);
+        Free(mgr);
         RS_DBI_errorMessage("could not calloc vector of connection Ids", RS_DBI_ERROR);
     }
     mgr->counter = counter;
@@ -119,20 +119,20 @@ RS_DBI_freeManager(Mgr_Handle * mgrHandle)
         RS_DBI_errorMessage(errMsg, RS_DBI_WARNING);
     }
     if (mgr->drvName) {
-        free(mgr->drvName);
+        Free(mgr->drvName);
         mgr->drvName = (char *) NULL;
     }
     if (mgr->connections) {
         for (i = 0; i < mgr->num_con; i++) {
             if (mgr->connections[i]) {
-                free(mgr->connections[i]);
+                Free(mgr->connections[i]);
             }
         }
-        free(mgr->connections);
+        Free(mgr->connections);
         mgr->connections = (RS_DBI_connection **) NULL;
     }
     if (mgr->connectionIds) {
-        free(mgr->connectionIds);
+        Free(mgr->connectionIds);
         mgr->connectionIds = (Sint *) NULL;
     }
     return;
@@ -146,6 +146,8 @@ RS_DBI_allocConnection(Mgr_Handle * mgrHandle, Sint max_res)
     Con_Handle *conHandle;
     Sint i, indx, con_id;
 
+    warning("RS_DBI: alloc connection !!");
+
     mgr = RS_DBI_getManager(mgrHandle);
     indx = RS_DBI_newEntry(mgr->connectionIds, mgr->length);
     if (indx < 0) {
@@ -155,7 +157,7 @@ RS_DBI_allocConnection(Mgr_Handle * mgrHandle, Sint max_res)
         (void) sprintf(buf, msg, (int) mgr->length);
         RS_DBI_errorMessage(buf, RS_DBI_ERROR);
     }
-    con = (RS_DBI_connection *) malloc(sizeof(RS_DBI_connection));
+    con = (RS_DBI_connection *) Malloc(sizeof(RS_DBI_connection));
     if (!con) {
         char *errMsg = "could not malloc dbConnection";
         RS_DBI_freeEntry(mgr->connectionIds, indx);
@@ -172,19 +174,19 @@ RS_DBI_allocConnection(Mgr_Handle * mgrHandle, Sint max_res)
 
     /* result sets for this connection */
     con->resultSets = (RS_DBI_resultSet **)
-        calloc((size_t) max_res, sizeof(RS_DBI_resultSet));
+        Calloc((size_t) max_res, RS_DBI_resultSet);
     if (!con->resultSets) {
         char *errMsg = "could not calloc resultSets for the dbConnection";
         RS_DBI_freeEntry(mgr->connectionIds, indx);
-        free(con);
+        Free(con);
         RS_DBI_errorMessage(errMsg, RS_DBI_ERROR);
     }
     con->num_res = (Sint) 0;
-    con->resultSetIds = (Sint *) calloc((size_t) max_res, sizeof(Sint));
+    con->resultSetIds = (Sint *) Calloc((size_t) max_res, Sint);
     if (!con->resultSetIds) {
         char *errMsg = "could not calloc vector of resultSet Ids";
-        free(con->resultSets);
-        free(con);
+        Free(con->resultSets);
+        Free(con);
         RS_DBI_freeEntry(mgr->connectionIds, indx);
         RS_DBI_errorMessage(errMsg, RS_DBI_ERROR);
     }
@@ -244,10 +246,10 @@ RS_DBI_freeConnection(Con_Handle * conHandle)
     }
     /* delete this connection from manager's connection table */
     if (con->resultSets) {
-        free(con->resultSets);
+        Free(con->resultSets);
     }
     if (con->resultSetIds) {
-        free(con->resultSetIds);
+        Free(con->resultSetIds);
     }
 
     /* update the manager's connection table */
@@ -256,7 +258,7 @@ RS_DBI_freeConnection(Con_Handle * conHandle)
     mgr->connections[indx] = (RS_DBI_connection *) NULL;
     mgr->num_con -= (Sint) 1;
 
-    free(con);
+    Free(con);
     con = (RS_DBI_connection *) NULL;
 
     return;
@@ -280,7 +282,7 @@ RS_DBI_allocResultSet(Con_Handle * conHandle)
         RS_DBI_errorMessage(msg, RS_DBI_ERROR);
     }
 
-    result = (RS_DBI_resultSet *) malloc(sizeof(RS_DBI_resultSet));
+    result = (RS_DBI_resultSet *) Malloc(sizeof(RS_DBI_resultSet));
     if (!result) {
         char *errMsg = "could not malloc dbResultSet";
         RS_DBI_freeEntry(con->resultSetIds, indx);
@@ -328,12 +330,12 @@ RS_DBI_freeResultSet(Res_Handle * rsHandle)
         RS_DBI_errorMessage(errMsg, RS_DBI_WARNING);
     }
     if (result->statement) {
-        free(result->statement);
+        Free(result->statement);
     }
     if (result->fields) {
         RS_DBI_freeFields(result->fields);
     }
-    free(result);
+    Free(result);
     result = (RS_DBI_resultSet *) NULL;
 
     /* update connection's resultSet table */
@@ -351,21 +353,21 @@ RS_DBI_allocFields(int num_fields)
     RS_DBI_fields *flds;
     size_t n;
 
-    flds = (RS_DBI_fields *) malloc(sizeof(RS_DBI_fields));
+    flds = (RS_DBI_fields *) Malloc(sizeof(RS_DBI_fields));
     if (!flds) {
         char *errMsg = "could not malloc RS_DBI_fields";
         RS_DBI_errorMessage(errMsg, RS_DBI_ERROR);
     }
     n = (size_t) num_fields;
     flds->num_fields = num_fields;
-    flds->name = (char **) calloc(n, sizeof(char *));
-    flds->type = (Sint *) calloc(n, sizeof(Sint));
-    flds->length = (Sint *) calloc(n, sizeof(Sint));
-    flds->precision = (Sint *) calloc(n, sizeof(Sint));
-    flds->scale = (Sint *) calloc(n, sizeof(Sint));
-    flds->nullOk = (Sint *) calloc(n, sizeof(Sint));
-    flds->isVarLength = (Sint *) calloc(n, sizeof(Sint));
-    flds->Sclass = (Stype *) calloc(n, sizeof(Stype));
+    flds->name = (char **) Calloc(n, char *);
+    flds->type = (Sint *) Calloc(n, Sint);
+    flds->length = (Sint *) Calloc(n, Sint);
+    flds->precision = (Sint *) Calloc(n, Sint);
+    flds->scale = (Sint *) Calloc(n, Sint);
+    flds->nullOk = (Sint *) Calloc(n, Sint);
+    flds->isVarLength = (Sint *) Calloc(n, Sint);
+    flds->Sclass = (Stype *) Calloc(n, Stype);
 
     return flds;
 }
@@ -377,33 +379,33 @@ RS_DBI_freeFields(RS_DBI_fields * flds)
     if (flds->name) {           /* (as per Jeff Horner's patch) */
         for (i = 0; i < flds->num_fields; i++) {
             if (flds->name[i]) {
-                free(flds->name[i]);
+                Free(flds->name[i]);
             }
         }
-        free(flds->name);
+        Free(flds->name);
     }
     if (flds->type) {
-        free(flds->type);
+        Free(flds->type);
     }
     if (flds->length) {
-        free(flds->length);
+        Free(flds->length);
     }
     if (flds->precision) {
-        free(flds->precision);
+        Free(flds->precision);
     }
     if (flds->scale) {
-        free(flds->scale);
+        Free(flds->scale);
     }
     if (flds->nullOk) {
-        free(flds->nullOk);
+        Free(flds->nullOk);
     }
     if (flds->isVarLength) {
-        free(flds->isVarLength);
+        Free(flds->isVarLength);
     }
     if (flds->Sclass) {
-        free(flds->Sclass);
+        Free(flds->Sclass);
     }
-    free(flds);
+    Free(flds);
     flds = (RS_DBI_fields *) NULL;
     return;
 }
@@ -618,7 +620,7 @@ RS_DBI_copyString(const char *str)
 {
     char *buffer;
 
-    buffer = (char *) malloc((size_t) strlen(str) + 1);
+    buffer = (char *) Malloc((size_t) strlen(str) + 1);
     if (!buffer) {
         RS_DBI_errorMessage("internal error in RS_DBI_copyString: could not alloc string space", RS_DBI_ERROR);
     }
@@ -631,7 +633,7 @@ RS_DBI_nCopyString(const char *str, size_t len, int del_blanks)
 {
     char *str_buffer, *end;
 
-    str_buffer = (char *) malloc(len + 1);
+    str_buffer = (char *) Malloc(len + 1);
     if (!str_buffer) {
         char errMsg[128];
         (void) sprintf(errMsg, "could not malloc %ld bytes in RS_DBI_nCopyString", (long) len + 1);
